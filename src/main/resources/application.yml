@@ -1,0 +1,14 @@
+server:
+  port: 8090
+
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+  freemarker:
+    template-loader-path: classpath:/generator
+    suffix: .ftl
+    settings:
+      default_encoding: UTF-8
+      number_format: computer

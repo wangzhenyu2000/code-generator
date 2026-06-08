@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Generator</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="album py-5">
+    <div class="container">
+        <div class="row row-cols-1 row-cols-md-2 g-4 justify-content-center">
+            <div class="col" style="max-width: 420px;">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center py-5">
+                        <div class="feature-icon mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-box" viewBox="0 0 16 16">
+                                <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5 8 5.961 14.154 3.5 8.186 1.113zM15 4.239l-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923l6.5 2.6zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464L7.443.184z"/>
+                            </svg>
+                        </div>
+                        <h5 class="card-title">Project Scaffold</h5>
+                        <p class="card-text text-muted">生成完整的 Spring Boot + MyBatis-Plus 后端项目脚手架，包含统一返回体、异常处理、分页配置等基础设施。</p>
+                        <a th:href="@{/scaffold}" class="btn btn-primary px-4">开始使用</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col" style="max-width: 420px;">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center py-5">
+                        <div class="feature-icon mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-database" viewBox="0 0 16 16">
+                                <path d="M4.318 2.687C5.234 2.271 6.58 2 8 2s2.766.27 3.682.687C12.644 3.126 13 3.624 13 4c0 .374-.356.875-1.318 1.313C10.766 5.727 9.42 6 8 6s-2.766-.273-3.682-.687C3.356 4.875 3 4.373 3 4c0-.374.356-.872 1.318-1.313zM13 6.698v3.052c0 .374-.356.875-1.318 1.313C10.766 11.477 9.42 11.75 8 11.75s-2.766-.273-3.682-.687C3.356 10.623 3 10.122 3 9.75V6.698c.271.202.58.378.904.517C5.065 7.721 6.468 8 8 8s2.935-.28 4.096-.785c.324-.14.633-.315.904-.517zm0 4V13.75c0 .374-.356.875-1.318 1.313C10.766 15.477 9.42 15.75 8 15.75s-2.766-.273-3.682-.687C3.356 14.623 3 14.122 3 13.75v-3.052c.271.202.58.378.904.517C5.065 11.721 6.468 12 8 12s2.935-.28 4.096-.785c.324-.14.633-.315.904-.517z"/>
+                            </svg>
+                        </div>
+                        <h5 class="card-title">DB Reverse Engineering</h5>
+                        <p class="card-text text-muted">连接数据库，读取表结构，一键生成 Entity、Mapper、Service、Controller 全套 CRUD 代码。</p>
+                        <a th:href="@{/reverse}" class="btn btn-primary px-4">开始使用</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
