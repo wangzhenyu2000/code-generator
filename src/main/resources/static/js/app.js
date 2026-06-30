@@ -1,12 +1,4 @@
 // --- Common ---
-function showAlert(message, type) {
-    const box = document.getElementById('alertBox');
-    box.innerHTML = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>`;
-}
-
 function downloadZip(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -37,6 +29,12 @@ function downloadZip(blob, filename) {
 
     document.getElementById('scaffoldForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        const gid = groupIdEl.value.trim();
+        const aid = artifactIdEl.value.trim();
+        if (!gid) { showAlert('请填写 Group ID', 'warning'); return; }
+        if (!aid) { showAlert('请填写 Artifact ID', 'warning'); return; }
+
         const btn = document.getElementById('generateBtn');
         const btnText = document.getElementById('btnText');
         const btnSpinner = document.getElementById('btnSpinner');
@@ -100,7 +98,89 @@ const DB_URL_TEMPLATES = {
         jdbcUrlEl.value = DB_URL_TEMPLATES[dbTypeEl.value] || '';
     });
     jdbcUrlEl.value = DB_URL_TEMPLATES[dbTypeEl.value];
+    refreshSavedConnections();
 })();
+
+// --- 连接配置管理 ---
+async function refreshSavedConnections() {
+    try {
+        const resp = await fetch('/api/connection-config');
+        const result = await resp.json();
+        if (result.code !== 200) return;
+        const list = result.data || [];
+        const sel = document.getElementById('savedConnSelect');
+        if (!sel) return;
+        sel.innerHTML = '<option value="">-- 手动填写 --</option>' +
+            list.map(c => `<option value="${c.id}">${c.name} (${c.dbType})</option>`).join('');
+    } catch (e) { /* server not ready, ignore */ }
+}
+
+async function loadSavedConnection() {
+    const sel = document.getElementById('savedConnSelect');
+    const id = sel.value;
+    if (!id) { showAlert('请先选择一个已保存的连接', 'warning'); return; }
+    try {
+        const resp = await fetch('/api/connection-config');
+        const result = await resp.json();
+        const config = (result.data || []).find(c => c.id == id);
+        if (!config) { showAlert('连接配置不存在', 'warning'); return; }
+        document.getElementById('dbType').value = config.dbType || 'mysql';
+        document.getElementById('jdbcUrl').value = config.jdbcUrl || '';
+        document.getElementById('username').value = config.username || '';
+        document.getElementById('password').value = config.password || '';
+        document.getElementById('schemaPattern').value = config.schemaPattern || '';
+        showAlert('已加载: ' + config.name, 'info');
+        testConnection();
+    } catch (e) {
+        showAlert('加载失败: ' + e.message, 'danger');
+    }
+}
+
+async function saveCurrentConnection() {
+    const jdbcUrl = document.getElementById('jdbcUrl').value.trim();
+    const username = document.getElementById('username').value.trim();
+    if (!jdbcUrl || !username) { showAlert('请先填写 JDBC URL 和用户名', 'warning'); return; }
+    const name = prompt('请输入连接名称（如：本地MySQL开发库）', '');
+    if (!name) return;
+    const dbType = document.getElementById('dbType').value;
+    try {
+        const resp = await fetch('/api/connection-config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                name: name,
+                dbType: dbType,
+                driverClassName: DB_DRIVERS[dbType],
+                jdbcUrl: jdbcUrl,
+                username: username,
+                password: document.getElementById('password').value,
+                schemaPattern: document.getElementById('schemaPattern').value.trim()
+            })
+        });
+        const result = await resp.json();
+        if (result.code !== 200) throw new Error(result.message || '保存失败');
+        showAlert('连接配置已保存', 'success');
+        refreshSavedConnections();
+    } catch (e) {
+        showAlert('保存失败: ' + e.message, 'danger');
+    }
+}
+
+async function deleteSavedConnection() {
+    const sel = document.getElementById('savedConnSelect');
+    const id = sel.value;
+    if (!id) { showAlert('请先选择一个已保存的连接', 'warning'); return; }
+    if (!confirm('确定删除该连接配置？')) return;
+    try {
+        const resp = await fetch('/api/connection-config/' + id, { method: 'DELETE' });
+        const result = await resp.json();
+        if (result.code !== 200) throw new Error(result.message || '删除失败');
+        showAlert('已删除', 'success');
+        refreshSavedConnections();
+    } catch (e) {
+        showAlert('删除失败: ' + e.message, 'danger');
+    }
+}
 
 let tableNames = [];
 
@@ -159,6 +239,23 @@ function selectAll(checked) {
 }
 
 async function generateReverse() {
+    // 客户端校验
+    const pkgName = document.getElementById('reversePackageName').value.trim();
+    const jdbcUrl = document.getElementById('jdbcUrl').value.trim();
+    const username = document.getElementById('username').value.trim();
+    if (!jdbcUrl) {
+        showAlert('请先填写 JDBC URL 并测试连接', 'warning');
+        return;
+    }
+    if (!username) {
+        showAlert('请输入数据库用户名', 'warning');
+        return;
+    }
+    if (!pkgName) {
+        showAlert('请填写 Package Name', 'warning');
+        return;
+    }
+
     const selected = Array.from(document.querySelectorAll('.table-check:checked')).map(cb => cb.value);
     if (selected.length === 0) {
         showAlert('请至少选择一张表', 'warning');

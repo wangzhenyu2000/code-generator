@@ -17,7 +17,8 @@ public class JdbcMetadataReader {
     public static List<String> listTables(Connection conn, String catalog, String schemaPattern) throws SQLException {
         List<String> tables = new ArrayList<>();
         DatabaseMetaData meta = conn.getMetaData();
-        try (ResultSet rs = meta.getTables(catalog, schemaPattern, "%", new String[]{"TABLE"})) {
+        String cat = catalog != null ? catalog : conn.getCatalog();
+        try (ResultSet rs = meta.getTables(cat, schemaPattern, "%", new String[]{"TABLE"})) {
             while (rs.next()) {
                 String name = rs.getString("TABLE_NAME");
                 if (name != null && !name.isEmpty()) {
@@ -30,13 +31,14 @@ public class JdbcMetadataReader {
 
     public static TableInfo readTableInfo(Connection conn, String catalog, String schemaPattern, String tableName) throws SQLException {
         DatabaseMetaData meta = conn.getMetaData();
+        String cat = catalog != null ? catalog : conn.getCatalog();
 
         TableInfo tableInfo = new TableInfo();
         tableInfo.setTableName(tableName);
         tableInfo.setEntityName(NamingUtil.toPascalCase(tableName));
 
         // Table comment
-        try (ResultSet rs = meta.getTables(catalog, schemaPattern, tableName, new String[]{"TABLE"})) {
+        try (ResultSet rs = meta.getTables(cat, schemaPattern, tableName, new String[]{"TABLE"})) {
             if (rs.next()) {
                 String remark = rs.getString("REMARKS");
                 if (remark != null && !remark.isEmpty()) {
@@ -47,14 +49,14 @@ public class JdbcMetadataReader {
 
         // Primary keys
         List<String> pkColumns = new ArrayList<>();
-        try (ResultSet rs = meta.getPrimaryKeys(catalog, schemaPattern, tableName)) {
+        try (ResultSet rs = meta.getPrimaryKeys(cat, schemaPattern, tableName)) {
             while (rs.next()) {
                 pkColumns.add(rs.getString("COLUMN_NAME"));
             }
         }
 
         // Columns
-        try (ResultSet rs = meta.getColumns(catalog, schemaPattern, tableName, "%")) {
+        try (ResultSet rs = meta.getColumns(cat, schemaPattern, tableName, "%")) {
             while (rs.next()) {
                 ColumnInfo col = new ColumnInfo();
                 col.setColumnName(rs.getString("COLUMN_NAME"));

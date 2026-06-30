@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS connection_config (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL COMMENT '配置名称',
+    db_type VARCHAR(20) NOT NULL COMMENT '数据库类型',
+    driver_class_name VARCHAR(200) NOT NULL,
+    jdbc_url VARCHAR(500) NOT NULL,
+    username VARCHAR(100) NOT NULL,
+    password VARCHAR(200) DEFAULT '',
+    schema_pattern VARCHAR(100) DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

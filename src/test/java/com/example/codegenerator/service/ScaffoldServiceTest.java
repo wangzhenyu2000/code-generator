@@ -10,7 +10,10 @@ import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+import org.springframework.test.context.ActiveProfiles;
+
+@SpringBootTest(properties = "spring.freemarker.template-loader-path=classpath:/generator")
+@ActiveProfiles("test")
 class ScaffoldServiceTest {
 
     @Autowired

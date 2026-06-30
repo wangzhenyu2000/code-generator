@@ -10,15 +10,29 @@
 <body>
 <div th:replace="~{fragments/header :: header}"></div>
 
+<!-- toast 容器 —— body 直下，不受任何父级影响，永远在导航栏下方 -->
+<div id="toastContainer" style="position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;"></div>
+
 <div class="container py-4" style="max-width: 780px;">
     <h3 class="mb-4">DB Reverse Engineering</h3>
-
-    <div id="alertBox"></div>
 
     <!-- Step 1: Connection -->
     <div class="card mb-4">
         <div class="card-header fw-bold">Step 1: 连接数据库</div>
         <div class="card-body">
+            <div class="row align-items-end mb-3">
+                <div class="col-md-5">
+                    <label class="form-label">已保存的连接</label>
+                    <select class="form-select" id="savedConnSelect">
+                        <option value="">-- 手动填写 --</option>
+                    </select>
+                </div>
+                <div class="col-md-7 d-flex gap-1 align-items-end" style="padding-bottom: 1px;">
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="loadSavedConnection()">加载</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="saveCurrentConnection()">保存当前</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="deleteSavedConnection()">删除</button>
+                </div>
+            </div>
             <div class="mb-3">
                 <label class="form-label">数据库类型</label>
                 <select class="form-select" id="dbType">
@@ -89,6 +103,28 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- 内嵌 showAlert 兜底：即使 app.js 加载失败，错误提示也能正常显示 -->
+<script>
+window._toastTimer = null;
+window.showAlert = function(message, type) {
+    var box = document.getElementById('toastContainer');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'toastContainer';
+        box.style.cssText = 'position:fixed;top:72px;left:50%;transform:translateX(-50%);z-index:9999;pointer-events:none;';
+        document.body.appendChild(box);
+    }
+    if (window._toastTimer) { clearTimeout(window._toastTimer); window._toastTimer = null; }
+    box.innerHTML = '';
+    if (!message) return;
+    box.innerHTML = '<div class="alert alert-' + type + '" role="alert" style="pointer-events:auto;margin:0;box-shadow:0 4px 16px rgba(0,0,0,0.25);max-width:520px;font-size:15px;text-align:center;">' +
+        message +
+        '<button type="button" class="btn-close ms-2" onclick="var p=this.parentNode;if(p)p.remove();" aria-label="Close"></button>' +
+        '</div>';
+    window._toastTimer = setTimeout(function() { box.innerHTML = ''; window._toastTimer = null; }, 4000);
+};
+</script>
 <script th:src="@{/js/app.js}"></script>
 </body>
 </html>

@@ -22,15 +22,9 @@ public class ReverseController {
     private final ReverseService reverseService;
 
     @PostMapping("/test-connection")
-    public Result<List<String>> testConnection(@Valid @RequestBody ConnectionTestRequest request) {
-        try {
-            List<String> tables = reverseService.testConnection(request);
-            return Result.ok(tables);
-        } catch (SQLException e) {
-            return Result.fail(500, "数据库连接失败: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
-            return Result.fail(400, e.getMessage());
-        }
+    public Result<List<String>> testConnection(@Valid @RequestBody ConnectionTestRequest request) throws SQLException {
+        List<String> tables = reverseService.testConnection(request);
+        return Result.ok(tables);
     }
 
     @PostMapping("/generate")

@@ -6,6 +6,7 @@ import com.example.codegenerator.model.ReverseRequest;
 import com.example.codegenerator.model.TableInfo;
 import com.example.codegenerator.util.JdbcMetadataReader;
 import com.example.codegenerator.util.NamingUtil;
+import com.example.codegenerator.util.SqlErrorUtil;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,7 @@ public class ReverseService {
         try {
             Class.forName(request.getDriverClassName());
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Driver class not found: " + request.getDriverClassName()
-                    + ". Please ensure the JDBC driver is on the classpath.");
+            throw new IllegalArgumentException("找不到数据库驱动: " + request.getDriverClassName());
         }
         try (Connection conn = getConnection(request.getJdbcUrl(), request.getUsername(), request.getPassword())) {
             return JdbcMetadataReader.listTables(conn, null, request.getSchemaPattern());
@@ -54,7 +54,7 @@ public class ReverseService {
         try {
             Class.forName(request.getDriverClassName());
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("Driver class not found: " + request.getDriverClassName());
+            throw new IllegalArgumentException("找不到数据库驱动: " + request.getDriverClassName());
         }
         try (Connection conn = getConnection(request.getJdbcUrl(), request.getUsername(), request.getPassword())) {
             for (String tableName : request.getTableNames()) {
@@ -62,7 +62,8 @@ public class ReverseService {
                 tables.add(tableInfo);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Database error: " + e.getMessage(), e);
+            log.error("Database error during reverse generation", e);
+            throw new RuntimeException(SqlErrorUtil.translate(e.getMessage()), e);
         }
 
         String pkg = request.getPackageName();
@@ -75,7 +76,6 @@ public class ReverseService {
         Map<String, String> files = new LinkedHashMap<>();
 
         for (TableInfo tableInfo : tables) {
-            // Compute type flags for entity imports
             boolean hasLocalDateTime = false, hasLocalDate = false, hasLocalTime = false, hasBigDecimal = false;
             String pkType = "Long";
             for (ColumnInfo col : tableInfo.getColumns()) {
